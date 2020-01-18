@@ -38,6 +38,19 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -48,29 +61,26 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
     /**
      * Creates new form MasterFrame
      */
-    
     ClassifierModel modelIcon = null;
     Point startPoint;
     Thread thread = null;
     JTree tree;
     DefaultMutableTreeNode root;
     DefaultTreeModel model;
-    
-    
-    
+
     public MasterFrame() {
         initComponents();
         start();
         enableTrainButtons(false);
         fileStructureTree.setModel(new FileSystemModel(new File(SystemVariables.projectRootFolder)));
     }
-    
+
     public MasterFrame(ClassifierModel modelIcon, String projectRootFolder) {
         initComponents();
         start();
         this.modelIcon = modelIcon;
         SystemVariables.projectRootFolder = projectRootFolder;
-        if(modelIcon == null){
+        if (modelIcon == null) {
             enableTrainButtons(false);
         } else {
             enableTrainButtons(true);
@@ -598,20 +608,20 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
     }//GEN-LAST:event_createPathPlanButtonActionPerformed
 
     private void createModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createModelButtonActionPerformed
-        if(modelIcon != null){
+        if (modelIcon != null) {
             logText(SystemConstants.MODEL_AVAILABLE);
             return;
         }
         logText("Model Clicked");
         CreateNewModel createNewModel = new CreateNewModel(this, true);
         HashMap<String, String> returnValues = createNewModel.showDialog();
-        
-        if(returnValues.isEmpty()){
+
+        if (returnValues.isEmpty()) {
             logText(SystemConstants.MODEL_NOT_CREATED);
-        } else if(returnValues.size() == 6){
+        } else if (returnValues.size() == 6) {
             createModelOnWorkspace(returnValues);
-            createModelFileInFolderStructure(SystemVariables.projectRootFolder);
-        } else{
+            createModelFileInFolderStructure(returnValues);
+        } else {
             logText(SystemConstants.INVALID_HASHMAP);
         }
     }//GEN-LAST:event_createModelButtonActionPerformed
@@ -625,14 +635,14 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
     }//GEN-LAST:event_workspacePanelMouseClicked
 
     private void trainClassifierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trainClassifierButtonActionPerformed
-        
+
         logText("Please Wait Until The Testing Is Finished");
         logText("Starting Testing...");
-        
-        String command = "python3 /home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/com/ucsc/groupone/python/Predict.py " + 
-                modelIcon.getFigPath() + " " + modelIcon.getTiPath() + " " +
-                modelIcon.getOiPath() + " " + modelIcon.getCfPath();
-        
+
+        String command = "python3 /home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/com/ucsc/groupone/python/Predict.py "
+                + modelIcon.getFigPath() + " " + modelIcon.getTiPath() + " "
+                + modelIcon.getOiPath() + " " + modelIcon.getCfPath();
+
         try {
             String line;
             Process process = Runtime.getRuntime().exec(command);
@@ -642,13 +652,13 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 //            Process process = pb.start();
             process.waitFor();
             BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            while((line = error.readLine()) != null){
+            while ((line = error.readLine()) != null) {
 //                logText(line);
             }
             error.close();
 
             BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            while((line=input.readLine()) != null){
+            while ((line = input.readLine()) != null) {
 //                logText(line);
             }
 
@@ -672,8 +682,8 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         JFileChooser jfc = new JFileChooser();
         jfc.setDialogTitle("Specify A File To Save");
         int userSelection = jfc.showSaveDialog(this);
-        
-        if(userSelection == JFileChooser.APPROVE_OPTION){
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
             PrintWriter file = null;
             try {
                 File fileToSave = jfc.getSelectedFile();
@@ -701,7 +711,6 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 //DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
 //model.reload(root);
 //}
-    
     private void configure() {
         File fileRoot = new File("/home/hashan");
 
@@ -714,16 +723,16 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         }
 //        filesTree.setModel(model);
     }
-    
-    private String getLogAreaText(){
+
+    private String getLogAreaText() {
         String logAreaText = logArea.getText();
-        if(logAreaText.equals("")){
+        if (logAreaText.equals("")) {
             return logAreaText;
         } else {
             return logAreaText.concat(System.lineSeparator());
         }
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -818,7 +827,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
     // End of variables declaration//GEN-END:variables
 
     private void logText(String logText) {
-        if(logArea.getText().equals("")){
+        if (logArea.getText().equals("")) {
             logArea.setText(">>> " + logText);
         } else {
             logArea.append(System.lineSeparator() + ">>> " + logText);
@@ -830,7 +839,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         modelIcon.addMouseMotionListener(this);
         modelIcon.addMouseListener(this);
         modelIcon.addMouseListener(new ModelOptionsPopUpClickListener());
-      
+
         workspacePanel.add(modelIcon);
         workspacePanel.revalidate();
         workspacePanel.repaint();
@@ -848,11 +857,11 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         modelIcon.setCfPath(modelMap.get("cfPath"));
         modelIcon.setPath(modelMap.get("path"));
         modelIcon.setName(modelMap.get("name"));
-        
+
         modelIcon.addMouseListener(this);
         modelIcon.addMouseMotionListener(this);
         modelIcon.addMouseListener(new ModelOptionsPopUpClickListener());
-        
+
         workspacePanel.add(modelIcon);
         workspacePanel.revalidate();
         workspacePanel.repaint();
@@ -879,7 +888,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
     }
 
     @Override
-    public void mouseClicked(MouseEvent me) {   
+    public void mouseClicked(MouseEvent me) {
         modelIcon.requestFocus(true);
         DefaultTableModel tableModel = (DefaultTableModel) propertyWindow.getModel();
         tableModel.setNumRows(0);
@@ -909,12 +918,12 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 
     @Override
     public void run() {
-        while(thread != null){
-            try{
-                if(modelIcon != null){
-                    if(modelIcon.hasFocus()){
+        while (thread != null) {
+            try {
+                if (modelIcon != null) {
+                    if (modelIcon.hasFocus()) {
                         modelIcon.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
-                    } else{
+                    } else {
                         Point location = modelIcon.getLocation();
                         modelIcon.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
                         modelIcon.setLocation(location);
@@ -923,22 +932,23 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
                 } else {
                     enableTrainButtons(false);
                 }
-                
+
                 Thread.sleep(100);
-            } catch(InterruptedException e){}
-          
+            } catch (InterruptedException e) {
+            }
+
         }
         thread = null;
     }
-    
-    public void start(){
-        if(thread == null){
+
+    public void start() {
+        if (thread == null) {
             thread = new Thread(this);
             thread.start();
         }
     }
-    
-    public void stop(){
+
+    public void stop() {
         thread = null;
     }
 
@@ -947,7 +957,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         testClassifierButton.setEnabled(value);
         predictClassifierButton.setEnabled(value);
     }
-    
+
 //    private void makeTree(String filePath){
 //        if(!SystemVariables.isProjectCreated()){
 //            return;
@@ -985,14 +995,68 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 //            getList(child, fList[i]);
 //        }
 //    }
+    private void createModelFileInFolderStructure(HashMap<String, String> values) {
 
-    private void createModelFileInFolderStructure(String projectRootFolder) {
-        File newModelFile = new File(projectRootFolder + "/" +"ClassiferModel.xml");
         try {
-            newModelFile.createNewFile();
-        } catch (IOException ex) {
-            Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
+
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+            // root elements
+            Document doc = docBuilder.newDocument();
+            Element rootElement = doc.createElement("classifier");
+            doc.appendChild(rootElement);
+
+            // model elements
+            Element model = doc.createElement("model");
+            rootElement.appendChild(model);
+
+            // set attribute to model element
+            Attr nameAttr = doc.createAttribute("name");
+            nameAttr.setValue(values.get("name"));
+            model.setAttributeNode(nameAttr);
+            
+            Attr pathAttr = doc.createAttribute("path");
+            pathAttr.setValue(values.get("path"));
+            model.setAttributeNode(pathAttr);
+
+            // figPath elements
+            Element figPath = doc.createElement("figPath");
+            figPath.appendChild(doc.createTextNode(values.get("figPath")));
+            model.appendChild(figPath);
+
+            // tiPath elements
+            Element tiPath = doc.createElement("tiPath");
+            tiPath.appendChild(doc.createTextNode(values.get("tiPath")));
+            model.appendChild(tiPath);
+
+            // oiPath elements
+            Element oiPath = doc.createElement("oiPath");
+            oiPath.appendChild(doc.createTextNode(values.get("oiPath")));
+            model.appendChild(oiPath);
+
+            // cfPath elements
+            Element cfpath = doc.createElement("cfPath");
+            cfpath.appendChild(doc.createTextNode(values.get("cfPath")));
+            model.appendChild(cfpath);
+
+            // write the content into xml file
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(new File(values.get("path")));
+
+            // Output to console for testing
+            // StreamResult result = new StreamResult(System.out);
+            transformer.transform(source, result);
+
+            logText("Model saved!");
+
+        } catch (ParserConfigurationException pce) {
+            pce.printStackTrace();
+        } catch (TransformerException tfe) {
+            tfe.printStackTrace();
         }
-        fileStructureTree.getModel().valueForPathChanged(new TreePath(new File(SystemVariables.IDE_HOME_FOLDER)), "ClassiferModel.xml");
+//        fileStructureTree.getModel().valueForPathChanged(new TreePath(new File(SystemVariables.IDE_HOME_FOLDER)), "ClassiferModel.xml");
     }
 }

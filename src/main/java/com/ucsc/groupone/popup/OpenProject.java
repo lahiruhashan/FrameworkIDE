@@ -30,19 +30,17 @@ public class OpenProject {
 
     public OpenProject() {
     }
-    
-    public OpenProject(JFrame parentFrame, String fileExtension) {
+
+    public OpenProject(JFrame parentFrame) {
         this.parentFrame = parentFrame;
-        this.fileExtension = fileExtension;
     }
 
     public HashMap<String, String> getProperties() {
         JFileChooser modelChooser = new JFileChooser(SystemVariables.IDE_HOME_FOLDER);
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("MODEL FILES", fileExtension, "model");
-        modelChooser.setFileFilter(filter);
+        modelChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         modelChooser.showOpenDialog(parentFrame);
-        File selectedFile = modelChooser.getSelectedFile();
-        return populateModelToMap(selectedFile);
+        File selectedFolder = modelChooser.getSelectedFile();
+        return populateModelToMap(selectedFolder);
     }
 
     public HashMap<String, String> populateModelToMap(File selectedFile) {
@@ -52,7 +50,7 @@ public class OpenProject {
 
             try {
 
-                File fXmlFile = new File(filePath);
+                File fXmlFile = new File(filePath + "/project.lhp");
                 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
                 Document doc = dBuilder.parse(fXmlFile);
@@ -65,20 +63,35 @@ public class OpenProject {
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
                     Element eElement = (Element) nNode;
+                    String modelName = eElement.getElementsByTagName("name").item(0).getTextContent();
+                    String modelPath = eElement.getElementsByTagName("path").item(0).getTextContent();
 
-                    String name = eElement.getAttribute("name");
-                    String path = eElement.getAttribute("path");
-                    String figPath = eElement.getElementsByTagName("figPath").item(0).getTextContent();
-                    String oiPath = eElement.getElementsByTagName("oiPath").item(0).getTextContent();
-                    String tiPath = eElement.getElementsByTagName("tiPath").item(0).getTextContent();
-                    String cfPath = eElement.getElementsByTagName("cfPath").item(0).getTextContent();
+                    File modelFile = new File(modelPath + "/" + modelName + Extensions.MODEL);
 
-                    modelMap.put("figPath", figPath);
-                    modelMap.put("tiPath", tiPath);
-                    modelMap.put("oiPath", oiPath);
-                    modelMap.put("cfPath", cfPath);
-                    modelMap.put("path", path);
-                    modelMap.put("name", name); 
+                    Document modelDoc = dBuilder.parse(modelFile);
+
+                    modelDoc.getDocumentElement().normalize();
+                    NodeList modelPropList = modelDoc.getElementsByTagName("model");
+
+                    Node modelNode = modelPropList.item(0);
+
+                    if (modelNode.getNodeType() == Node.ELEMENT_NODE) {
+
+                        Element mElement = (Element) modelNode;
+                        String name = mElement.getAttribute("name");
+                        String path = mElement.getAttribute("path");
+                        String figPath = mElement.getElementsByTagName("figPath").item(0).getTextContent();
+                        String oiPath = mElement.getElementsByTagName("oiPath").item(0).getTextContent();
+                        String tiPath = mElement.getElementsByTagName("tiPath").item(0).getTextContent();
+                        String cfPath = mElement.getElementsByTagName("cfPath").item(0).getTextContent();
+
+                        modelMap.put("figPath", figPath);
+                        modelMap.put("tiPath", tiPath);
+                        modelMap.put("oiPath", oiPath);
+                        modelMap.put("cfPath", cfPath);
+                        modelMap.put("path", path);
+                        modelMap.put("name", name);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();

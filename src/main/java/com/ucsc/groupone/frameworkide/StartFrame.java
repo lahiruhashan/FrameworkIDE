@@ -215,7 +215,7 @@ public class StartFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_createProjectLabelMouseClicked
 
     private void openProjectLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_openProjectLabelMouseClicked
-        OpenProject openProject = new OpenProject(this, Extensions.MODEL);
+        OpenProject openProject = new OpenProject(this);
         HashMap<String, String> modelProperties = openProject.getProperties();
         
         MasterFrame masterFrame = new MasterFrame(

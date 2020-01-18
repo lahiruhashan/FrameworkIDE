@@ -11,7 +11,7 @@ package com.ucsc.groupone.utils;
  */
 public class Extensions {
     
-    public static final String MODEL = "xml";
+    public static final String MODEL = ".xml";
     public static final String PPI = "ppi";
     public static final String RAI = "rai";
     
