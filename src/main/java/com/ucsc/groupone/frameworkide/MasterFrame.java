@@ -14,12 +14,15 @@ import com.ucsc.groupone.utils.SystemConstants;
 import com.ucsc.groupone.utils.SystemVariables;
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -41,6 +44,7 @@ import javax.swing.tree.TreePath;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -67,6 +71,8 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
     JTree tree;
     DefaultMutableTreeNode root;
     DefaultTreeModel model;
+    DefaultTableModel tableModel = null;
+    private boolean running = false;
 
     public MasterFrame() {
         initComponents();
@@ -394,6 +400,11 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
                 return canEdit [columnIndex];
             }
         });
+        propertyWindow.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                propertyWindowFocusLost(evt);
+            }
+        });
         jScrollPane4.setViewportView(propertyWindow);
 
         javax.swing.GroupLayout jInternalFrame3Layout = new javax.swing.GroupLayout(jInternalFrame3.getContentPane());
@@ -597,10 +608,99 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 
     private void predictClassifierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predictClassifierButtonActionPerformed
         // TODO add your handling code here:
+        String[] cmd = new String[]{"/bin/sh", "/home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/com/ucsc/groupone/python/newfile.sh"};
+        try {
+            String result = null;
+            Process process = Runtime.getRuntime().exec(cmd);
+            BufferedReader in =
+        new BufferedReader(new InputStreamReader(process.getInputStream()));
+    String inputLine;
+    while ((inputLine = in.readLine()) != null) {
+        System.out.println(inputLine);
+        result += inputLine;
+    }
+    in.close();
+            logText("Testing Completed");
+        } catch (IOException ex) {
+            Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+//        
+//                String command = "cd one";
+//        new Thread(new Runnable() {
+//            public void run() {
+//                try {
+//                    String res = null;
+//                    String line;
+//                    Process process = Runtime.getRuntime().exec(command);
+//                    BufferedReader in =
+//        new BufferedReader(new InputStreamReader(process.getInputStream()));
+//    String inputLine;
+//    while ((inputLine = in.readLine()) != null) {
+//        System.out.println(inputLine);
+//        res += inputLine;
+//    }
+//    in.close();
+//                    process.waitFor();
+//                    BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+//                    error.close();
+//                    BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+//                    input.close();
+//
+//                    OutputStream outputStream = process.getOutputStream();
+//                    PrintStream printStream = new PrintStream(outputStream);
+//                    printStream.println();
+//                    printStream.flush();
+//                    printStream.close();
+//                    logText("Images Created At Output Directory");
+//                    logText("Testing Completed");
+//                    running = false;
+//                } catch (IOException ex) {
+//                    Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
+//                } catch (InterruptedException ex) {
+//                    Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//            }
+//        }).start();
     }//GEN-LAST:event_predictClassifierButtonActionPerformed
 
     private void testClassifierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testClassifierButtonActionPerformed
-        // TODO add your handling code here:
+        logText("Please Wait Until The Testing Is Finished");
+        logText("Starting Testing...");
+
+        this.running = true;
+
+        String command = "python3 /home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/com/ucsc/groupone/python/Predict.py "
+                + modelIcon.getFigPath() + " " + modelIcon.getTiPath() + " "
+                + modelIcon.getOiPath() + " " + modelIcon.getCfPath();
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    String line;
+                    Process process = Runtime.getRuntime().exec(command);
+                    process.waitFor();
+                    BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    error.close();
+                    BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    input.close();
+
+                    OutputStream outputStream = process.getOutputStream();
+                    PrintStream printStream = new PrintStream(outputStream);
+                    printStream.println();
+                    printStream.flush();
+                    printStream.close();
+                    logText("Images Created At Output Directory");
+                    logText("Testing Completed");
+                    running = false;
+                } catch (IOException ex) {
+                    Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }).start();
+
     }//GEN-LAST:event_testClassifierButtonActionPerformed
 
     private void createPathPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPathPlanButtonActionPerformed
@@ -612,15 +712,15 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
             logText(SystemConstants.MODEL_AVAILABLE);
             return;
         }
-        logText("Model Clicked");
         CreateNewModel createNewModel = new CreateNewModel(this, true);
-        HashMap<String, String> returnValues = createNewModel.showDialog();
+        ClassifierModel classifierModel = createNewModel.showDialog();
 
-        if (returnValues.isEmpty()) {
+        if (classifierModel == null) {
             logText(SystemConstants.MODEL_NOT_CREATED);
-        } else if (returnValues.size() == 6) {
-            createModelOnWorkspace(returnValues);
-            createModelFileInFolderStructure(returnValues);
+        } else if (!classifierModel.getPath().equals("")) {
+            createModelOnWorkspace(classifierModel);
+            createModelFileInFolderStructure(classifierModel);
+            updateProjectFile(classifierModel.getName(), classifierModel.getPath());
         } else {
             logText(SystemConstants.INVALID_HASHMAP);
         }
@@ -632,68 +732,16 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 
     private void workspacePanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_workspacePanelMouseClicked
 //        modelIcon.requestFocusInWindow();
+
     }//GEN-LAST:event_workspacePanelMouseClicked
 
     private void trainClassifierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trainClassifierButtonActionPerformed
 
-        logText("Please Wait Until The Testing Is Finished");
-        logText("Starting Testing...");
-
-        String command = "python3 /home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/com/ucsc/groupone/python/Predict.py "
-                + modelIcon.getFigPath() + " " + modelIcon.getTiPath() + " "
-                + modelIcon.getOiPath() + " " + modelIcon.getCfPath();
-
-        try {
-            String line;
-            Process process = Runtime.getRuntime().exec(command);
-//            ProcessBuilder pb = new ProcessBuilder("python3", "/home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/com/ucsc/groupone/python/Predict.py",
-//            modelIcon.getFigPath(), modelIcon.getTiPath(), modelIcon.getOiPath(), modelIcon.getCfPath());
-//            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-//            Process process = pb.start();
-            process.waitFor();
-            BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            while ((line = error.readLine()) != null) {
-//                logText(line);
-            }
-            error.close();
-
-            BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            while ((line = input.readLine()) != null) {
-//                logText(line);
-            }
-
-            input.close();
-
-            OutputStream outputStream = process.getOutputStream();
-            PrintStream printStream = new PrintStream(outputStream);
-            printStream.println();
-            printStream.flush();
-            printStream.close();
-            logText("Images Created At Output Directory");
-            logText("Testing Completed");
-        } catch (IOException ex) {
-            Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }//GEN-LAST:event_trainClassifierButtonActionPerformed
 
     private void saveProjectFileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveProjectFileMenuActionPerformed
-        JFileChooser jfc = new JFileChooser();
-        jfc.setDialogTitle("Specify A File To Save");
-        int userSelection = jfc.showSaveDialog(this);
-
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
-            PrintWriter file = null;
-            try {
-                File fileToSave = jfc.getSelectedFile();
-//                System.out.println("Save file as : " + fileToSave.getPath());
-                file = new PrintWriter(fileToSave);
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-                file.close();
-            }
+        if (modelIcon != null) {
+            createModelFileInFolderStructure(modelIcon);
         }
     }//GEN-LAST:event_saveProjectFileMenuActionPerformed
 
@@ -705,6 +753,20 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         }
         fileStructureTree.setModel(new FileSystemModel(new File(SystemVariables.projectRootFolder)));
     }//GEN-LAST:event_createProjectFileMenuActionPerformed
+
+    private void propertyWindowFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_propertyWindowFocusLost
+        if (tableModel.getRowCount() > 0 && modelIcon != null) {
+            String newFigPath = tableModel.getValueAt(0, 1).toString();
+            String newTiPath = tableModel.getValueAt(1, 1).toString();
+            String newOiPath = tableModel.getValueAt(2, 1).toString();
+            String newCfPath = tableModel.getValueAt(3, 1).toString();
+
+            modelIcon.setFigPath(newFigPath);
+            modelIcon.setTiPath(newTiPath);
+            modelIcon.setOiPath(newOiPath);
+            modelIcon.setCfPath(newCfPath);
+        }
+    }//GEN-LAST:event_propertyWindowFocusLost
 
 //    public void clearTree(JTree tree) {
 //    DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
@@ -833,6 +895,13 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
             logArea.append(System.lineSeparator() + ">>> " + logText);
         }
     }
+//
+//    private void logTextAnimated(String string) {
+//        String currentString = logArea.getText();
+//        String newString = currentString.substring(0, currentString.length() - 3);
+//        logArea.setText(newString);
+//        logArea.append(string);
+//    }
 
     private void loadModelOnWorkspace() {
         modelIcon.setVisible(true);
@@ -846,17 +915,21 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         logText("Model Added");
     }
 
-    private void createModelOnWorkspace(HashMap<String, String> modelMap) {
-        ImageIcon image = new ImageIcon(
-                "/home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/images/model-workspace-icon.png");
-        modelIcon = new ClassifierModel(image);
+    public void removeModel() {
+        File modelFile = new File(modelIcon.getPath());
+        boolean isDeleted = modelFile.delete();
+        updateProjectFile("", "");
+        if (isDeleted) {
+            logText(SystemConstants.MODEL_DELETED);
+        }
+        modelIcon = null;
+        tableModel.setNumRows(0);
+
+    }
+
+    private void createModelOnWorkspace(ClassifierModel model) {
+        modelIcon = model;
         modelIcon.setVisible(true);
-        modelIcon.setFigPath(modelMap.get("figPath"));
-        modelIcon.setTiPath(modelMap.get("tiPath"));
-        modelIcon.setOiPath(modelMap.get("oiPath"));
-        modelIcon.setCfPath(modelMap.get("cfPath"));
-        modelIcon.setPath(modelMap.get("path"));
-        modelIcon.setName(modelMap.get("name"));
 
         modelIcon.addMouseListener(this);
         modelIcon.addMouseMotionListener(this);
@@ -865,7 +938,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         workspacePanel.add(modelIcon);
         workspacePanel.revalidate();
         workspacePanel.repaint();
-        logText("Model Added");
+        logText(SystemConstants.MODEL_ADDED);
     }
 
     @Override
@@ -890,7 +963,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
     @Override
     public void mouseClicked(MouseEvent me) {
         modelIcon.requestFocus(true);
-        DefaultTableModel tableModel = (DefaultTableModel) propertyWindow.getModel();
+        tableModel = (DefaultTableModel) propertyWindow.getModel();
         tableModel.setNumRows(0);
         tableModel.addRow(new Object[]{"Frozen Inference Graph", modelIcon.getFigPath()});
         tableModel.addRow(new Object[]{"Test Images Directory", modelIcon.getTiPath()});
@@ -928,7 +1001,12 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
                         modelIcon.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
                         modelIcon.setLocation(location);
                     }
-                    enableTrainButtons(true);
+                    if (running == false) {
+                        enableTrainButtons(true);
+                    } else {
+                        enableTrainButtons(false);
+                    }
+
                 } else {
                     enableTrainButtons(false);
                 }
@@ -995,7 +1073,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 //            getList(child, fList[i]);
 //        }
 //    }
-    private void createModelFileInFolderStructure(HashMap<String, String> values) {
+    private void createModelFileInFolderStructure(ClassifierModel classifierModel) {
 
         try {
 
@@ -1013,38 +1091,38 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 
             // set attribute to model element
             Attr nameAttr = doc.createAttribute("name");
-            nameAttr.setValue(values.get("name"));
+            nameAttr.setValue(classifierModel.getName());
             model.setAttributeNode(nameAttr);
-            
+
             Attr pathAttr = doc.createAttribute("path");
-            pathAttr.setValue(values.get("path"));
+            pathAttr.setValue(classifierModel.getPath());
             model.setAttributeNode(pathAttr);
 
             // figPath elements
             Element figPath = doc.createElement("figPath");
-            figPath.appendChild(doc.createTextNode(values.get("figPath")));
+            figPath.appendChild(doc.createTextNode(classifierModel.getFigPath()));
             model.appendChild(figPath);
 
             // tiPath elements
             Element tiPath = doc.createElement("tiPath");
-            tiPath.appendChild(doc.createTextNode(values.get("tiPath")));
+            tiPath.appendChild(doc.createTextNode(classifierModel.getTiPath()));
             model.appendChild(tiPath);
 
             // oiPath elements
             Element oiPath = doc.createElement("oiPath");
-            oiPath.appendChild(doc.createTextNode(values.get("oiPath")));
+            oiPath.appendChild(doc.createTextNode(classifierModel.getOiPath()));
             model.appendChild(oiPath);
 
             // cfPath elements
             Element cfpath = doc.createElement("cfPath");
-            cfpath.appendChild(doc.createTextNode(values.get("cfPath")));
+            cfpath.appendChild(doc.createTextNode(classifierModel.getCfPath()));
             model.appendChild(cfpath);
 
             // write the content into xml file
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File(values.get("path")));
+            StreamResult result = new StreamResult(new File(classifierModel.getPath()));
 
             // Output to console for testing
             // StreamResult result = new StreamResult(System.out);
@@ -1058,5 +1136,51 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
             tfe.printStackTrace();
         }
 //        fileStructureTree.getModel().valueForPathChanged(new TreePath(new File(SystemVariables.IDE_HOME_FOLDER)), "ClassiferModel.xml");
+    }
+
+    private void updateProjectFile(String name, String path) {
+        try {
+
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+            // root elements
+            Document doc = docBuilder.newDocument();
+            Element rootElement = doc.createElement("project");
+            doc.appendChild(rootElement);
+
+            // model elements
+            Element model = doc.createElement("model");
+            rootElement.appendChild(model);
+
+            // figPath elements
+            Element nameEl = doc.createElement("name");
+            nameEl.appendChild(doc.createTextNode(name));
+            model.appendChild(nameEl);
+
+            // tiPath elements
+            Element pathEl = doc.createElement("path");
+            pathEl.appendChild(doc.createTextNode(path));
+            model.appendChild(pathEl);
+
+            // write the content into xml file
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+//            transformer.setOutputProperty(OutputKeys.INDENT, "ues");
+//            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(new File(SystemVariables.projectRootFolder + "/fideproject.lhp"));
+
+            // Output to console for testing
+            // StreamResult result = new StreamResult(System.out);
+            transformer.transform(source, result);
+
+            logText("Project Updated!");
+
+        } catch (ParserConfigurationException pce) {
+            pce.printStackTrace();
+        } catch (TransformerException tfe) {
+            tfe.printStackTrace();
+        }
     }
 }

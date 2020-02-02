@@ -5,6 +5,7 @@
  */
 package com.ucsc.groupone.popup;
 
+import com.ucsc.groupone.models.ClassifierModel;
 import com.ucsc.groupone.utils.Extensions;
 import com.ucsc.groupone.utils.SystemVariables;
 import java.io.File;
@@ -35,22 +36,27 @@ public class OpenProject {
         this.parentFrame = parentFrame;
     }
 
-    public HashMap<String, String> getProperties() {
+    public ClassifierModel getModel() {
         JFileChooser modelChooser = new JFileChooser(SystemVariables.IDE_HOME_FOLDER);
         modelChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         modelChooser.showOpenDialog(parentFrame);
         File selectedFolder = modelChooser.getSelectedFile();
+        if (selectedFolder == null) {
+            return null;
+        }
+        SystemVariables.setProjectRootFolder(selectedFolder.getAbsolutePath());
         return populateModelToMap(selectedFolder);
     }
 
-    public HashMap<String, String> populateModelToMap(File selectedFile) {
-        HashMap<String, String> modelMap = new HashMap();
+    public ClassifierModel populateModelToMap(File selectedFile) {
+        ClassifierModel model = null;
         if (selectedFile != null) {
             String filePath = selectedFile.getAbsolutePath();
+            model = new ClassifierModel();
 
             try {
 
-                File fXmlFile = new File(filePath + "/project.lhp");
+                File fXmlFile = new File(filePath + "/fideproject.lhp");
                 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
                 Document doc = dBuilder.parse(fXmlFile);
@@ -66,7 +72,7 @@ public class OpenProject {
                     String modelName = eElement.getElementsByTagName("name").item(0).getTextContent();
                     String modelPath = eElement.getElementsByTagName("path").item(0).getTextContent();
 
-                    File modelFile = new File(modelPath + "/" + modelName + Extensions.MODEL);
+                    File modelFile = new File(modelPath);
 
                     Document modelDoc = dBuilder.parse(modelFile);
 
@@ -85,19 +91,19 @@ public class OpenProject {
                         String tiPath = mElement.getElementsByTagName("tiPath").item(0).getTextContent();
                         String cfPath = mElement.getElementsByTagName("cfPath").item(0).getTextContent();
 
-                        modelMap.put("figPath", figPath);
-                        modelMap.put("tiPath", tiPath);
-                        modelMap.put("oiPath", oiPath);
-                        modelMap.put("cfPath", cfPath);
-                        modelMap.put("path", path);
-                        modelMap.put("name", name);
+                        model.setName(name);
+                        model.setPath(path);
+                        model.setFigPath(figPath);
+                        model.setOiPath(oiPath);
+                        model.setTiPath(tiPath);
+                        model.setCfPath(cfPath);
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return modelMap;
+        return model;
     }
 
 }

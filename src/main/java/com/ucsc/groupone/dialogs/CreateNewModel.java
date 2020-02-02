@@ -5,6 +5,7 @@
  */
 package com.ucsc.groupone.dialogs;
 
+import com.ucsc.groupone.models.ClassifierModel;
 import com.ucsc.groupone.popup.OpenProject;
 import com.ucsc.groupone.utils.Extensions;
 import com.ucsc.groupone.utils.SystemConstants;
@@ -13,8 +14,16 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -25,7 +34,7 @@ public class CreateNewModel extends javax.swing.JDialog {
     /**
      * Creates new form CreateNewModel
      */
-    HashMap<String, String> chosenPathsMap = new HashMap<>();
+    ClassifierModel model;
     private final String userHome = System.getProperty("user.home");
 
     public CreateNewModel(java.awt.Frame parent, boolean modal) {
@@ -517,13 +526,13 @@ public class CreateNewModel extends javax.swing.JDialog {
             if (figPath.isEmpty() || tiPath.isEmpty() || oiPath.isEmpty() || cfPath.isEmpty()) {
                 messageBox.setText(SystemConstants.REQUIRED);
             } else {
-                chosenPathsMap = new HashMap<>();
-                this.chosenPathsMap.put("name", modelNameField.getText());
-                this.chosenPathsMap.put("path", modelPathField.getText());
-                this.chosenPathsMap.put("figPath", figPath);
-                this.chosenPathsMap.put("tiPath", tiPath);
-                this.chosenPathsMap.put("oiPath", oiPath);
-                this.chosenPathsMap.put("cfPath", cfPath);
+                model = new ClassifierModel();
+                this.model.setName(modelNameField.getText());
+                this.model.setPath(modelPathField.getText());
+                this.model.setFigPath(figPath);
+                this.model.setTiPath(tiPath);
+                this.model.setOiPath(oiPath);
+                this.model.setCfPath(cfPath);
 
                 this.dispose();
             }
@@ -532,18 +541,60 @@ public class CreateNewModel extends javax.swing.JDialog {
             if (externalModelPath.isEmpty()) {
                 messageBoxExternalModel.setText(SystemConstants.REQUIRED);
             } else {
-                chosenPathsMap = new HashMap<>();
-                OpenProject openProject = new OpenProject();
-                this.chosenPathsMap = openProject.populateModelToMap(new File(externalModelPath));
+                model = new ClassifierModel();
+                try {
+
+                File fXmlFile = new File(externalModelPath);
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                Document doc = dBuilder.parse(fXmlFile);
+
+                    doc.getDocumentElement().normalize();
+                    NodeList modelPropList = doc.getElementsByTagName("model");
+
+                    Node modelNode = modelPropList.item(0);
+
+                    if (modelNode.getNodeType() == Node.ELEMENT_NODE) {
+
+                        Element mElement = (Element) modelNode;
+                        String name = mElement.getAttribute("name");
+                        String path = mElement.getAttribute("path");
+                        String figPath = mElement.getElementsByTagName("figPath").item(0).getTextContent();
+                        String oiPath = mElement.getElementsByTagName("oiPath").item(0).getTextContent();
+                        String tiPath = mElement.getElementsByTagName("tiPath").item(0).getTextContent();
+                        String cfPath = mElement.getElementsByTagName("cfPath").item(0).getTextContent();
+
+                        model.setName(name);
+                        model.setPath(path);
+                        model.setFigPath(figPath);
+                        model.setOiPath(oiPath);
+                        model.setTiPath(tiPath);
+                        model.setCfPath(cfPath);
+                    }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
                 this.dispose();
             }
         }
+        
+        this.model.setIcon(new ImageIcon(SystemConstants.PATH_TO_MODEL_ICON));
     }//GEN-LAST:event_finishButtonActionPerformed
 
     private void fileChooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileChooserButtonActionPerformed
-        setPathToTextBox("Select the path to saved model",
-                JFileChooser.FILES_ONLY,
-                externalModelPathText);
+        JFileChooser chooser = new JFileChooser(SystemVariables.IDE_HOME_FOLDER);
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("xml files (*.xml)", "xml");
+        chooser.setDialogTitle("Select the path to saved model");
+        chooser.setFileFilter(filter);
+        chooser.showOpenDialog(null);
+        File selectedFile = chooser.getSelectedFile();
+        if (selectedFile != null) {
+            String filePath = selectedFile.getAbsolutePath();
+            externalModelPathText.setText(filePath);
+        }
+        if (!checkUnfilledFields(selectModelButtonGroup.getSelection().getActionCommand())) {
+            finishButton.setEnabled(true);
+        }
     }//GEN-LAST:event_fileChooserButtonActionPerformed
 
     private void frozenInferenceGraphFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_frozenInferenceGraphFCActionPerformed
@@ -582,7 +633,7 @@ public class CreateNewModel extends javax.swing.JDialog {
     }//GEN-LAST:event_modelNameFieldMouseClicked
 
     private void modelNameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_modelNameFieldKeyReleased
-        modelPathField.setText(modelLocationField.getText().concat("/").concat(modelNameField.getText()).concat(".").concat(Extensions.MODEL));
+        modelPathField.setText(modelLocationField.getText().concat("/").concat(modelNameField.getText()).concat(Extensions.MODEL));
     }//GEN-LAST:event_modelNameFieldKeyReleased
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -683,10 +734,10 @@ public class CreateNewModel extends javax.swing.JDialog {
         return slider.getCurrentComponent(slider).getName();
     }
 
-    public HashMap<String, String> showDialog() {
+    public ClassifierModel showDialog() {
         this.setLocationRelativeTo(null);
         this.setVisible(true);
-        return chosenPathsMap;
+        return model;
     }
 
     private void setPathToTextBox(String title, int selectionType, JTextField textField) {

@@ -22,9 +22,14 @@ public class SystemConstants {
     public static final String RETURN_CANCEL = "Cancel Returned";
     public static final String RETURN_SUCCESS = "Success Returned";
     
-    // model creation constants
+    // model creation/deletion constants
     public static final String MODEL_NOT_CREATED = "Model Not Created. Try Again";
     public static final String INVALID_HASHMAP = "Error : Invalid HashMap Returned";
     public static final String MODEL_AVAILABLE = "Model Is Already Created On The Workspace";
     public static final String REQUIRED = "All The Fields Needs To Be Filled";
+    public static final String MODEL_ADDED = "Model Added";
+    public static final String MODEL_DELETED = "Model Removed";
+    
+    // images paths
+    public static final String PATH_TO_MODEL_ICON = "/home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/images/model-workspace-icon.png";
 }

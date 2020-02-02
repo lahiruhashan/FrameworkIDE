@@ -18,6 +18,11 @@ public class ClassifierModel extends JLabel{
     String oiPath;
     String cfPath;
     String path;
+    String name;
+    
+    public ClassifierModel() {
+        
+    }
 
     public ClassifierModel(ImageIcon imageIcon) {
         super(imageIcon);
@@ -77,6 +82,16 @@ public class ClassifierModel extends JLabel{
     public void setPath(String path) {
         this.path = path;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    
     
     
 }

@@ -5,6 +5,7 @@
  */
 package com.ucsc.groupone.popup;
 
+import com.ucsc.groupone.frameworkide.MasterFrame;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.JMenuItem;
@@ -22,7 +23,9 @@ public class ModelOptionsPopUp extends JPopupMenu {
         deleteItem.addActionListener((ActionEvent ae) -> {
             if(component.getClass().getName().equals("com.ucsc.groupone.models.ClassifierModel")){
                 Component parent = component.getParent();
+                MasterFrame mf = (MasterFrame) component.getParent().getParent().getParent().getParent().getParent();
                 component.getParent().remove(component);
+                mf.removeModel();
                 parent.revalidate();
                 parent.repaint();
             } else {

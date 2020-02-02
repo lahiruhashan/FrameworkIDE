@@ -8,11 +8,13 @@ package com.ucsc.groupone.frameworkide;
 
 import com.ucsc.groupone.dialogs.CreateProject;
 import com.ucsc.groupone.mappers.ModelMapper;
+import com.ucsc.groupone.models.ClassifierModel;
 import com.ucsc.groupone.popup.OpenProject;
 import com.ucsc.groupone.utils.Extensions;
 import com.ucsc.groupone.utils.SystemConstants;
 import com.ucsc.groupone.utils.SystemVariables;
 import java.util.HashMap;
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 /**
@@ -95,10 +97,20 @@ public class StartFrame extends javax.swing.JFrame {
         closeProjectLabel.setFont(new java.awt.Font("Fira Code", 0, 12)); // NOI18N
         closeProjectLabel.setText("Close");
         closeProjectLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        closeProjectLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                closeProjectLabelMouseClicked(evt);
+            }
+        });
 
         closeProjectIcon.setFont(new java.awt.Font("Fira Code", 0, 12)); // NOI18N
         closeProjectIcon.setIcon(new javax.swing.ImageIcon("/home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/images/close.png")); // NOI18N
         closeProjectIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        closeProjectIcon.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                closeProjectIconMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -216,15 +228,23 @@ public class StartFrame extends javax.swing.JFrame {
 
     private void openProjectLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_openProjectLabelMouseClicked
         OpenProject openProject = new OpenProject(this);
-        HashMap<String, String> modelProperties = openProject.getProperties();
-        
-        MasterFrame masterFrame = new MasterFrame(
-                ModelMapper.mapToClassifierModel(modelProperties),
-                modelProperties.get("path"));
-        masterFrame.setVisible(true);
-        masterFrame.setLocationRelativeTo(null);
-        this.dispose();
+        ClassifierModel model = openProject.getModel();
+        if (model != null) {
+            model.setIcon(new ImageIcon(SystemConstants.PATH_TO_MODEL_ICON));
+            MasterFrame masterFrame = new MasterFrame(model, SystemVariables.projectRootFolder);
+            masterFrame.setVisible(true);
+            masterFrame.setLocationRelativeTo(null);
+            this.dispose();
+        }
     }//GEN-LAST:event_openProjectLabelMouseClicked
+
+    private void closeProjectLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeProjectLabelMouseClicked
+        this.dispose();
+    }//GEN-LAST:event_closeProjectLabelMouseClicked
+
+    private void closeProjectIconMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeProjectIconMouseClicked
+        this.dispose();
+    }//GEN-LAST:event_closeProjectIconMouseClicked
 
     /**
      * @param args the command line arguments
