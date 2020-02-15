@@ -13,13 +13,22 @@ public class SystemVariables {
     
     public static final String IDE_HOME_FOLDER = System.getProperty("user.home").concat("/").concat(SystemConstants.IDE_FOLDER);
     public static String projectRootFolder = IDE_HOME_FOLDER;
+    public static final String INSTALLATION_FOLDER = "/home/hashan/NetBeansProjects/FrameworkIDE";
+    public static final String PYTHON_FOLDER = INSTALLATION_FOLDER + "/src/main/java/com/ucsc/groupone/python";
+    public static final String OBJECT_DETECTION_FOLDER = PYTHON_FOLDER 
+            + "/Classifier/ObjectDetectionApi/research/object_detection";
+    public static final String TRAINING_FOLDER = OBJECT_DETECTION_FOLDER 
+            + "/training";
+    public static final String DATA_FOLDER = OBJECT_DETECTION_FOLDER 
+            + "/data";
+
 
     public static void setProjectRootFolder(String prf) {
         projectRootFolder = prf;
     }
     
     public static boolean isProjectCreated(){
-        if(projectRootFolder.equals(IDE_HOME_FOLDER)){
+        if (projectRootFolder.equals(IDE_HOME_FOLDER)){
             return false;
         }
         return true;

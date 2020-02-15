@@ -19,6 +19,11 @@ public class ClassifierModel extends JLabel{
     String cfPath;
     String path;
     String name;
+    String pipelineConfiguration;
+    String annotatedImagesPath;
+    String trainDatasetPath;
+    String testDatasetPath;
+    int numberOfClasses;
     
     public ClassifierModel() {
         
@@ -90,8 +95,46 @@ public class ClassifierModel extends JLabel{
     public void setName(String name) {
         this.name = name;
     }
-    
-    
+
+    public String getPipelineConfiguration() {
+        return pipelineConfiguration;
+    }
+
+    public void setPipelineConfiguration(String pipelineConfiguration) {
+        this.pipelineConfiguration = pipelineConfiguration;
+    }
+
+    public String getAnnotatedImagesPath() {
+        return annotatedImagesPath;
+    }
+
+    public void setAnnotatedImagesPath(String annotatedImagesPath) {
+        this.annotatedImagesPath = annotatedImagesPath;
+    }
+
+    public String getTestDatasetPath() {
+        return testDatasetPath;
+    }
+
+    public void setTestDatasetPath(String testDatasetPath) {
+        this.testDatasetPath = testDatasetPath;
+    }
+
+    public String getTrainDatasetPath() {
+        return trainDatasetPath;
+    }
+
+    public void setTrainDatasetPath(String trainDatasetPath) {
+        this.trainDatasetPath = trainDatasetPath;
+    }
+
+    public int getNumberOfClasses() {
+        return numberOfClasses;
+    }
+
+    public void setNumberOfClasses(int numberOfClasses) {
+        this.numberOfClasses = numberOfClasses;
+    }
     
     
 }

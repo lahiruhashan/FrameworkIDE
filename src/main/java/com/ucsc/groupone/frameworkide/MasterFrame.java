@@ -8,11 +8,21 @@ package com.ucsc.groupone.frameworkide;
 import com.ucsc.groupone.models.FileSystemModel;
 import com.ucsc.groupone.dialogs.CreateNewModel;
 import com.ucsc.groupone.dialogs.CreateProject;
+import com.ucsc.groupone.dialogs.EditModelDetails;
+import com.ucsc.groupone.dialogs.PathPlanning;
 import com.ucsc.groupone.models.ClassifierModel;
+import com.ucsc.groupone.models.Coordinate;
 import com.ucsc.groupone.mouseListeners.ModelOptionsPopUpClickListener;
+import com.ucsc.groupone.popup.OpenProject;
+import com.ucsc.groupone.utils.FileChooserOptions;
+import com.ucsc.groupone.utils.PipelineConfigurer;
 import com.ucsc.groupone.utils.SystemConstants;
 import com.ucsc.groupone.utils.SystemVariables;
+import com.ucsc.groupone.utils.TextAreaOutputStream;
+import java.awt.Button;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,40 +31,38 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  *
@@ -73,11 +81,13 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
     DefaultTreeModel model;
     DefaultTableModel tableModel = null;
     private boolean running = false;
+    private Process process = null;
+    private List<Coordinate> coordinateList = null;
 
     public MasterFrame() {
         initComponents();
         start();
-        enableTrainButtons(false);
+        disableAllButtons(true);
         fileStructureTree.setModel(new FileSystemModel(new File(SystemVariables.projectRootFolder)));
     }
 
@@ -87,12 +97,12 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         this.modelIcon = modelIcon;
         SystemVariables.projectRootFolder = projectRootFolder;
         if (modelIcon == null) {
-            enableTrainButtons(false);
+            disableAllButtons(true);
         } else {
             enableTrainButtons(true);
+            loadModelOnWorkspace();
         }
         fileStructureTree.setModel(new FileSystemModel(new File(SystemVariables.projectRootFolder)));
-        loadModelOnWorkspace();
     }
 
     /**
@@ -109,6 +119,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         predictClassifierButton = new javax.swing.JButton();
         trainClassifierButton = new javax.swing.JButton();
         testClassifierButton = new javax.swing.JButton();
+        stopButton = new javax.swing.JButton();
         leftShortcuts = new javax.swing.JPanel();
         createPathPlanButton = new javax.swing.JButton();
         createRoboticArmInterfaceButton = new javax.swing.JButton();
@@ -207,30 +218,46 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
             }
         });
 
+        stopButton.setIcon(new javax.swing.ImageIcon("/home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/images/stop.png")); // NOI18N
+        stopButton.setBorder(null);
+        stopButton.setBorderPainted(false);
+        stopButton.setContentAreaFilled(false);
+        stopButton.setFocusPainted(false);
+        stopButton.setPreferredSize(new java.awt.Dimension(540, 524));
+        stopButton.setRolloverIcon(new javax.swing.ImageIcon("/home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/images/stop-black.png")); // NOI18N
+        stopButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout toolBarLayout = new javax.swing.GroupLayout(toolBar);
         toolBar.setLayout(toolBarLayout);
         toolBarLayout.setHorizontalGroup(
             toolBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(toolBarLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 866, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 815, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(trainClassifierButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(testClassifierButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(predictClassifierButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(15, 15, 15))
         );
         toolBarLayout.setVerticalGroup(
             toolBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE)
-            .addComponent(predictClassifierButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
             .addGroup(toolBarLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(toolBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(trainClassifierButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(testClassifierButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(testClassifierButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(predictClassifierButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -389,23 +416,26 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 
             },
             new String [] {
-                "Property", "Value"
+                "Property", "Value", ""
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, true
+                false, true, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
+        propertyWindow.setCellSelectionEnabled(true);
         propertyWindow.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 propertyWindowFocusLost(evt);
             }
         });
         jScrollPane4.setViewportView(propertyWindow);
+        propertyWindow.getColumnModel().getColumn(2)
+        .setMaxWidth(30);
 
         javax.swing.GroupLayout jInternalFrame3Layout = new javax.swing.GroupLayout(jInternalFrame3.getContentPane());
         jInternalFrame3.getContentPane().setLayout(jInternalFrame3Layout);
@@ -467,9 +497,19 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         fileMenu.add(createProjectFileMenu);
 
         openProjectFileMenu.setText("Open Project");
+        openProjectFileMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openProjectFileMenuActionPerformed(evt);
+            }
+        });
         fileMenu.add(openProjectFileMenu);
 
         closeProject.setText("Close Project");
+        closeProject.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeProjectActionPerformed(evt);
+            }
+        });
         fileMenu.add(closeProject);
 
         saveProjectFileMenu.setText("Save Project");
@@ -608,103 +648,59 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 
     private void predictClassifierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predictClassifierButtonActionPerformed
         // TODO add your handling code here:
-        String[] cmd = new String[]{"/bin/sh", "/home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/com/ucsc/groupone/python/newfile.sh"};
-        try {
-            String result = null;
-            Process process = Runtime.getRuntime().exec(cmd);
-            BufferedReader in =
-        new BufferedReader(new InputStreamReader(process.getInputStream()));
-    String inputLine;
-    while ((inputLine = in.readLine()) != null) {
-        System.out.println(inputLine);
-        result += inputLine;
-    }
-    in.close();
-            logText("Testing Completed");
-        } catch (IOException ex) {
-            Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-//        
-//                String command = "cd one";
-//        new Thread(new Runnable() {
-//            public void run() {
-//                try {
-//                    String res = null;
-//                    String line;
-//                    Process process = Runtime.getRuntime().exec(command);
-//                    BufferedReader in =
-//        new BufferedReader(new InputStreamReader(process.getInputStream()));
-//    String inputLine;
-//    while ((inputLine = in.readLine()) != null) {
-//        System.out.println(inputLine);
-//        res += inputLine;
-//    }
-//    in.close();
-//                    process.waitFor();
-//                    BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-//                    error.close();
-//                    BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-//                    input.close();
-//
-//                    OutputStream outputStream = process.getOutputStream();
-//                    PrintStream printStream = new PrintStream(outputStream);
-//                    printStream.println();
-//                    printStream.flush();
-//                    printStream.close();
-//                    logText("Images Created At Output Directory");
-//                    logText("Testing Completed");
-//                    running = false;
-//                } catch (IOException ex) {
-//                    Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
-//                } catch (InterruptedException ex) {
-//                    Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            }
-//        }).start();
+
     }//GEN-LAST:event_predictClassifierButtonActionPerformed
+
+    private Process setProcess(Process pro) {
+        if (process != null) {
+            return null;
+        }
+        process = pro;
+        return process;
+    }
 
     private void testClassifierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testClassifierButtonActionPerformed
         logText("Please Wait Until The Testing Is Finished");
-        logText("Starting Testing...");
-
-        this.running = true;
 
         String command = "python3 /home/hashan/NetBeansProjects/FrameworkIDE/src/main/java/com/ucsc/groupone/python/Predict.py "
                 + modelIcon.getFigPath() + " " + modelIcon.getTiPath() + " "
                 + modelIcon.getOiPath() + " " + modelIcon.getCfPath();
 
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    String line;
-                    Process process = Runtime.getRuntime().exec(command);
-                    process.waitFor();
-                    BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                    error.close();
-                    BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    input.close();
-
-                    OutputStream outputStream = process.getOutputStream();
-                    PrintStream printStream = new PrintStream(outputStream);
-                    printStream.println();
-                    printStream.flush();
-                    printStream.close();
-                    logText("Images Created At Output Directory");
-                    logText("Testing Completed");
-                    running = false;
-                } catch (IOException ex) {
-                    Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        try {
+            String line;
+            process = setProcess(Runtime.getRuntime().exec(command));
+            if (process == null) {
+                return;
             }
-        }).start();
+
+            logText("Starting Testing...");
+            this.running = true;
+            BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            error.close();
+            BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            input.close();
+
+            OutputStream outputStream = process.getOutputStream();
+            PrintStream printStream = new PrintStream(outputStream);
+            printStream.println();
+            printStream.flush();
+            printStream.close();
+            logText("Images Created At Output Directory");
+            logText("Testing Completed");
+            running = false;
+        } catch (IOException ex) {
+            Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }//GEN-LAST:event_testClassifierButtonActionPerformed
 
     private void createPathPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPathPlanButtonActionPerformed
-        logText("Path Plannning Clicked");
+        PathPlanning pathPlanning = new PathPlanning(this, true);
+        if (coordinateList == null) {
+            this.coordinateList = pathPlanning.showDialog(null);
+        } else {
+            this.coordinateList = pathPlanning.showDialog(coordinateList);
+        }
     }//GEN-LAST:event_createPathPlanButtonActionPerformed
 
     private void createModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createModelButtonActionPerformed
@@ -737,6 +733,53 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
 
     private void trainClassifierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trainClassifierButtonActionPerformed
 
+        if (modelIcon.getPipelineConfiguration() == null || modelIcon.getAnnotatedImagesPath() == null
+                || modelIcon.getTrainDatasetPath() == null || modelIcon.getTestDatasetPath() == null) {
+            JOptionPane.showMessageDialog(this, "Please Define Required File Paths To Start Training");
+            return;
+        }
+        // select the pipeline config file
+
+        if (!modelIcon.getPipelineConfiguration().contains(".config")) {
+            System.out.println("ERROR");
+        } else {
+            logText("Reading pipeline configuration file...");
+            PipelineConfigurer pc = new PipelineConfigurer();
+            File file = pc.config(modelIcon.getPipelineConfiguration());
+            if (file == null) {
+                return;
+            }
+            logText("Created a new pipeline configuraton file");
+
+//            new Thread(new Runnable() {
+//                public void run() {
+//                    try {
+//                        process = setProcess(new ProcessBuilder(
+//                                "bash",
+//                                "-c",
+//                                "sh " + SystemVariables.PYTHON_FOLDER + "/train.sh")
+//                                .start());
+//                        if (process == null) {
+//                            return;
+//                        }
+//                        running = true;
+//                        logText("Training started");
+//                        TextAreaOutputStream txtStream = new TextAreaOutputStream(logArea);
+//                        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+//                            String inputLine;
+//                            while ((inputLine = in.readLine()) != null) {
+//                                System.out.println(inputLine);
+//                                txtStream.write(inputLine.getBytes());
+//                            }
+//                        }
+//                        logText("Training completed");
+//                        running = false;
+//                    } catch (IOException ex) {
+//                        Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                }
+//            }).start();
+        }
     }//GEN-LAST:event_trainClassifierButtonActionPerformed
 
     private void saveProjectFileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveProjectFileMenuActionPerformed
@@ -760,13 +803,57 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
             String newTiPath = tableModel.getValueAt(1, 1).toString();
             String newOiPath = tableModel.getValueAt(2, 1).toString();
             String newCfPath = tableModel.getValueAt(3, 1).toString();
+            String newTrainDSPath = tableModel.getValueAt(4, 1).toString();
+            String newTestDSPath = tableModel.getValueAt(5, 1).toString();
+            String newPipelinePath = tableModel.getValueAt(6, 1).toString();
+            String newNumClasses = tableModel.getValueAt(7, 1).toString();
+            String newAnnotated = tableModel.getValueAt(8, 1).toString();
+            String newName = tableModel.getValueAt(9, 1).toString();
 
             modelIcon.setFigPath(newFigPath);
             modelIcon.setTiPath(newTiPath);
             modelIcon.setOiPath(newOiPath);
             modelIcon.setCfPath(newCfPath);
+            modelIcon.setTrainDatasetPath(newTrainDSPath);
+            modelIcon.setTestDatasetPath(newTestDSPath);
+            modelIcon.setPipelineConfiguration(newPipelinePath);
+            modelIcon.setNumberOfClasses(Integer.parseInt(newNumClasses));
+            modelIcon.setAnnotatedImagesPath(newAnnotated);
+            modelIcon.setName(newName);
         }
     }//GEN-LAST:event_propertyWindowFocusLost
+
+    private void openProjectFileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openProjectFileMenuActionPerformed
+        OpenProject openProject = new OpenProject(this);
+        ClassifierModel projectModel = openProject.getModel();
+        if (projectModel != null) {
+            projectModel.setIcon(new ImageIcon(SystemConstants.PATH_TO_MODEL_ICON));
+            MasterFrame masterFrame = new MasterFrame(projectModel, SystemVariables.projectRootFolder);
+            masterFrame.setVisible(true);
+            masterFrame.setLocationRelativeTo(null);
+            this.dispose();
+        }
+    }//GEN-LAST:event_openProjectFileMenuActionPerformed
+
+    private void closeProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeProjectActionPerformed
+        this.dispose();
+        StartFrame sf = new StartFrame();
+        sf.setVisible(true);
+        sf.setLocationRelativeTo(null);
+    }//GEN-LAST:event_closeProjectActionPerformed
+
+    private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+        if (process != null) {
+            try {
+                process.waitFor();
+                System.out.println(process.destroyForcibly().isAlive());
+                logText("Stopped By User");
+                this.running = false;
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MasterFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_stopButtonActionPerformed
 
 //    public void clearTree(JTree tree) {
 //    DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
@@ -812,13 +899,17 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MasterFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MasterFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MasterFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MasterFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MasterFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MasterFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MasterFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MasterFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -880,6 +971,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
     private javax.swing.JButton predictClassifierButton;
     private javax.swing.JTable propertyWindow;
     private javax.swing.JMenuItem saveProjectFileMenu;
+    private javax.swing.JButton stopButton;
     private javax.swing.JButton testClassifierButton;
     private javax.swing.JPanel toolBar;
     private javax.swing.JMenu toolsMenu;
@@ -965,10 +1057,25 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         modelIcon.requestFocus(true);
         tableModel = (DefaultTableModel) propertyWindow.getModel();
         tableModel.setNumRows(0);
-        tableModel.addRow(new Object[]{"Frozen Inference Graph", modelIcon.getFigPath()});
-        tableModel.addRow(new Object[]{"Test Images Directory", modelIcon.getTiPath()});
-        tableModel.addRow(new Object[]{"Output Directory", modelIcon.getOiPath()});
-        tableModel.addRow(new Object[]{"Classes File", modelIcon.getCfPath()});
+//        JLabel figPathButton = new JLabel("...");
+//        figPathButton.addActionListener((ActionEvent ae) -> {
+//            EditModelDetails editModelDetails = new EditModelDetails(null, true);
+//            ClassifierModel newModelProp = editModelDetails.showDialog(FileChooserOptions.FIG_PATH_PROPERTY,
+//                    "Change Fronzen Graph Path", JFileChooser.DIRECTORIES_ONLY, SystemVariables.OBJECT_DETECTION_FOLDER);
+//            modelIcon.setFigPath(newModelProp.getFigPath());
+//        });
+
+        tableModel.addRow(new Object[]{"Frozen Inference Graph", modelIcon.getFigPath(), "..."});
+        tableModel.addRow(new Object[]{"Test Images Directory", modelIcon.getTiPath(), "..."});
+        tableModel.addRow(new Object[]{"Output Directory", modelIcon.getOiPath(), "..."});
+        tableModel.addRow(new Object[]{"Classes File", modelIcon.getCfPath(), "..."});
+        tableModel.addRow(new Object[]{"Train Dataset", modelIcon.getTrainDatasetPath(), "..."});
+        tableModel.addRow(new Object[]{"Test Dataset", modelIcon.getTestDatasetPath(), "..."});
+        tableModel.addRow(new Object[]{"Pipeline Configuration", modelIcon.getPipelineConfiguration(), "..."});
+        tableModel.addRow(new Object[]{"Number of Classes", modelIcon.getNumberOfClasses(), "..."});
+        tableModel.addRow(new Object[]{"Annotated Images Directory", modelIcon.getAnnotatedImagesPath(), "..."});
+        tableModel.addRow(new Object[]{"Name", modelIcon.getName(), "..."});
+        tableModel.addRow(new Object[]{"Path", modelIcon.getPath()});
     }
 
     @Override
@@ -1008,7 +1115,7 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
                     }
 
                 } else {
-                    enableTrainButtons(false);
+                    disableAllButtons(true);
                 }
 
                 Thread.sleep(100);
@@ -1034,6 +1141,14 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
         trainClassifierButton.setEnabled(value);
         testClassifierButton.setEnabled(value);
         predictClassifierButton.setEnabled(value);
+        stopButton.setEnabled(!value);
+    }
+
+    private void disableAllButtons(boolean value) {
+        trainClassifierButton.setEnabled(!value);
+        testClassifierButton.setEnabled(!value);
+        predictClassifierButton.setEnabled(!value);
+        stopButton.setEnabled(!value);
     }
 
 //    private void makeTree(String filePath){
@@ -1098,25 +1213,57 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
             pathAttr.setValue(classifierModel.getPath());
             model.setAttributeNode(pathAttr);
 
-            // figPath elements
-            Element figPath = doc.createElement("figPath");
-            figPath.appendChild(doc.createTextNode(classifierModel.getFigPath()));
-            model.appendChild(figPath);
+            if (classifierModel.getFigPath() != null) {
+                Element figPath = doc.createElement("figPath");
+                figPath.appendChild(doc.createTextNode(classifierModel.getFigPath()));
+                model.appendChild(figPath);
+            }
 
-            // tiPath elements
-            Element tiPath = doc.createElement("tiPath");
-            tiPath.appendChild(doc.createTextNode(classifierModel.getTiPath()));
-            model.appendChild(tiPath);
+            if (classifierModel.getTiPath() != null) {
+                Element tiPath = doc.createElement("tiPath");
+                tiPath.appendChild(doc.createTextNode(classifierModel.getTiPath()));
+                model.appendChild(tiPath);
+            }
 
-            // oiPath elements
-            Element oiPath = doc.createElement("oiPath");
-            oiPath.appendChild(doc.createTextNode(classifierModel.getOiPath()));
-            model.appendChild(oiPath);
+            if (classifierModel.getOiPath() != null) {
+                Element oiPath = doc.createElement("oiPath");
+                oiPath.appendChild(doc.createTextNode(classifierModel.getOiPath()));
+                model.appendChild(oiPath);
+            }
 
-            // cfPath elements
-            Element cfpath = doc.createElement("cfPath");
-            cfpath.appendChild(doc.createTextNode(classifierModel.getCfPath()));
-            model.appendChild(cfpath);
+            if (classifierModel.getCfPath() != null) {
+                Element cfpath = doc.createElement("cfPath");
+                cfpath.appendChild(doc.createTextNode(classifierModel.getCfPath()));
+                model.appendChild(cfpath);
+            }
+
+            if (classifierModel.getAnnotatedImagesPath() != null) {
+                Element annotated = doc.createElement("annotatedImagesPath");
+                annotated.appendChild(doc.createTextNode(classifierModel.getAnnotatedImagesPath()));
+                model.appendChild(annotated);
+            }
+
+            if (classifierModel.getPipelineConfiguration() != null) {
+                Element pipe = doc.createElement("pipelineConfigurationPath");
+                pipe.appendChild(doc.createTextNode(classifierModel.getPipelineConfiguration()));
+                model.appendChild(pipe);
+            }
+
+            if (classifierModel.getTrainDatasetPath() != null) {
+                Element train = doc.createElement("trainDatasetPath");
+                train.appendChild(doc.createTextNode(classifierModel.getTrainDatasetPath()));
+                model.appendChild(train);
+            }
+
+            if (classifierModel.getTestDatasetPath() != null) {
+                Element test = doc.createElement("testDatasetPath");
+                test.appendChild(doc.createTextNode(classifierModel.getTestDatasetPath()));
+                model.appendChild(test);
+            }
+
+            Element classes = doc.createElement("numberOfClasses");
+            classes.appendChild(doc.createTextNode(String.valueOf(classifierModel.getNumberOfClasses())));
+            model.appendChild(classes);
 
             // write the content into xml file
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -1153,12 +1300,12 @@ public class MasterFrame extends javax.swing.JFrame implements MouseMotionListen
             Element model = doc.createElement("model");
             rootElement.appendChild(model);
 
-            // figPath elements
+            // name elements
             Element nameEl = doc.createElement("name");
             nameEl.appendChild(doc.createTextNode(name));
             model.appendChild(nameEl);
 
-            // tiPath elements
+            // path elements
             Element pathEl = doc.createElement("path");
             pathEl.appendChild(doc.createTextNode(path));
             model.appendChild(pathEl);

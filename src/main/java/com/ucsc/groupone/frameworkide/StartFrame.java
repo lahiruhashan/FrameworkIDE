@@ -230,7 +230,11 @@ public class StartFrame extends javax.swing.JFrame {
         OpenProject openProject = new OpenProject(this);
         ClassifierModel model = openProject.getModel();
         if (model != null) {
-            model.setIcon(new ImageIcon(SystemConstants.PATH_TO_MODEL_ICON));
+            if (model.getPath() != null) {
+                model.setIcon(new ImageIcon(SystemConstants.PATH_TO_MODEL_ICON));
+            } else {
+                model = null;
+            }
             MasterFrame masterFrame = new MasterFrame(model, SystemVariables.projectRootFolder);
             masterFrame.setVisible(true);
             masterFrame.setLocationRelativeTo(null);
@@ -301,7 +305,7 @@ public class StartFrame extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void openCreateNewProjectWindow() {
-        CreateProject newProject = new CreateProject(this, rootPaneCheckingEnabled);
+            CreateProject newProject = new CreateProject(this, rootPaneCheckingEnabled);
         String projectPath = newProject.showDialog();
         if(projectPath != null){
             if(projectPath.equals(SystemConstants.RETURN_ERROR)){

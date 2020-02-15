@@ -6,13 +6,10 @@
 package com.ucsc.groupone.popup;
 
 import com.ucsc.groupone.models.ClassifierModel;
-import com.ucsc.groupone.utils.Extensions;
 import com.ucsc.groupone.utils.SystemVariables;
 import java.io.File;
-import java.util.HashMap;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
@@ -57,46 +54,79 @@ public class OpenProject {
             try {
 
                 File fXmlFile = new File(filePath + "/fideproject.lhp");
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-                Document doc = dBuilder.parse(fXmlFile);
+                if (fXmlFile.isFile()) {
+                    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                    Document doc = dBuilder.parse(fXmlFile);
 
-                doc.getDocumentElement().normalize();
-                NodeList nList = doc.getElementsByTagName("model");
+                    doc.getDocumentElement().normalize();
+                    NodeList nList = doc.getElementsByTagName("model");
 
-                Node nNode = nList.item(0);
+                    Node nNode = nList.item(0);
 
-                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
-                    Element eElement = (Element) nNode;
-                    String modelName = eElement.getElementsByTagName("name").item(0).getTextContent();
-                    String modelPath = eElement.getElementsByTagName("path").item(0).getTextContent();
+                        Element eElement = (Element) nNode;
+                        String modelName = eElement.getElementsByTagName("name").item(0).getTextContent();
+                        String modelPath = eElement.getElementsByTagName("path").item(0).getTextContent();
 
-                    File modelFile = new File(modelPath);
+                        File modelFile = new File(modelPath);
 
-                    Document modelDoc = dBuilder.parse(modelFile);
+                        Document modelDoc = dBuilder.parse(modelFile);
 
-                    modelDoc.getDocumentElement().normalize();
-                    NodeList modelPropList = modelDoc.getElementsByTagName("model");
+                        modelDoc.getDocumentElement().normalize();
+                        NodeList modelPropList = modelDoc.getElementsByTagName("model");
 
-                    Node modelNode = modelPropList.item(0);
+                        Node modelNode = modelPropList.item(0);
 
-                    if (modelNode.getNodeType() == Node.ELEMENT_NODE) {
+                        if (modelNode.getNodeType() == Node.ELEMENT_NODE) {
 
-                        Element mElement = (Element) modelNode;
-                        String name = mElement.getAttribute("name");
-                        String path = mElement.getAttribute("path");
-                        String figPath = mElement.getElementsByTagName("figPath").item(0).getTextContent();
-                        String oiPath = mElement.getElementsByTagName("oiPath").item(0).getTextContent();
-                        String tiPath = mElement.getElementsByTagName("tiPath").item(0).getTextContent();
-                        String cfPath = mElement.getElementsByTagName("cfPath").item(0).getTextContent();
+                            Element mElement = (Element) modelNode;
+                            String name = mElement.getAttribute("name");
+                            String path = mElement.getAttribute("path");
+                            String figPath = null, oiPath = null, tiPath = null, cfPath = null, pipePath = null,
+                                    annotatedPath = null, trainDSPath = null, testDSPath = null;
+                            int numClasses = 0;
+                            if (mElement.getElementsByTagName("figPath").item(0) != null) {
+                                figPath = mElement.getElementsByTagName("figPath").item(0).getTextContent();
+                            }
+                            if (mElement.getElementsByTagName("oiPath").item(0) != null) {
+                                oiPath = mElement.getElementsByTagName("oiPath").item(0).getTextContent();
+                            }
+                            if (mElement.getElementsByTagName("tiPath").item(0) != null) {
+                                tiPath = mElement.getElementsByTagName("tiPath").item(0).getTextContent();
+                            }
+                            if (mElement.getElementsByTagName("cfPath").item(0) != null) {
+                                cfPath = mElement.getElementsByTagName("cfPath").item(0).getTextContent();
+                            }
+                            if (mElement.getElementsByTagName("pipelineConfigurationPath").item(0) != null) {
+                                pipePath = mElement.getElementsByTagName("pipelineConfigurationPath").item(0).getTextContent();
+                            }
+                            if (mElement.getElementsByTagName("annotatedImagesPath").item(0) != null) {
+                                annotatedPath = mElement.getElementsByTagName("annotatedImagesPath").item(0).getTextContent();
+                            }
+                            if (mElement.getElementsByTagName("trainDatasetPath").item(0) != null) {
+                                trainDSPath = mElement.getElementsByTagName("trainDatasetPath").item(0).getTextContent();
+                            }
+                            if (mElement.getElementsByTagName("testDatasetPath").item(0) != null) {
+                                testDSPath = mElement.getElementsByTagName("testDatasetPath").item(0).getTextContent();
+                            }
+                            if (mElement.getElementsByTagName("numberOfClasses").item(0) != null) {
+                                numClasses = Integer.parseInt(mElement.getElementsByTagName("numberOfClasses").item(0).getTextContent());
+                            }
 
-                        model.setName(name);
-                        model.setPath(path);
-                        model.setFigPath(figPath);
-                        model.setOiPath(oiPath);
-                        model.setTiPath(tiPath);
-                        model.setCfPath(cfPath);
+                            model.setName(name);
+                            model.setPath(path);
+                            model.setFigPath(figPath);
+                            model.setOiPath(oiPath);
+                            model.setTiPath(tiPath);
+                            model.setCfPath(cfPath);
+                            model.setPipelineConfiguration(pipePath);
+                            model.setAnnotatedImagesPath(annotatedPath);
+                            model.setTrainDatasetPath(trainDSPath);
+                            model.setTestDatasetPath(testDSPath);
+                            model.setNumberOfClasses(numClasses);
+                        }
                     }
                 }
             } catch (Exception e) {

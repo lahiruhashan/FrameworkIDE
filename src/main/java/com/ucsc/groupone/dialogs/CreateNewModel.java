@@ -8,8 +8,12 @@ package com.ucsc.groupone.dialogs;
 import com.ucsc.groupone.models.ClassifierModel;
 import com.ucsc.groupone.popup.OpenProject;
 import com.ucsc.groupone.utils.Extensions;
+import com.ucsc.groupone.utils.FileChooserOptions;
 import com.ucsc.groupone.utils.SystemConstants;
 import com.ucsc.groupone.utils.SystemVariables;
+import com.ucsc.groupone.utils.Validator;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,6 +66,7 @@ public class CreateNewModel extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
+        jRadioButton3 = new javax.swing.JRadioButton();
         loadModelPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -81,18 +86,38 @@ public class CreateNewModel extends javax.swing.JDialog {
         newModelPanel = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
+        pipelineConfigFilePath = new javax.swing.JTextField();
+        pipelineConfigFilePathFC = new javax.swing.JButton();
+        annotatedImagesDirPath = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        annotatedImagesDirPathFC = new javax.swing.JButton();
+        trainDatasetPath = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        trainDatasetPathFC = new javax.swing.JButton();
+        testDatasetPath = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        testDatasetPathFC = new javax.swing.JButton();
+        messageBox = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
+        outputDirPath = new javax.swing.JTextField();
+        outputDirPathFC = new javax.swing.JButton();
+        jLabel20 = new javax.swing.JLabel();
+        numberOfClasses = new javax.swing.JTextField();
+        loadModelWithInferencePanel = new javax.swing.JPanel();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
         frozenInferenceGraphPath = new javax.swing.JTextField();
         frozenInferenceGraphFC = new javax.swing.JButton();
         testingImagesPath = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
         testImagesFC = new javax.swing.JButton();
         outputImagesPath = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
         outputImagesFC = new javax.swing.JButton();
         classesFilePath = new javax.swing.JTextField();
-        jLabel9 = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
         classFileFC = new javax.swing.JButton();
-        messageBox = new javax.swing.JLabel();
+        messageBox1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Create/Load Model");
@@ -159,8 +184,12 @@ public class CreateNewModel extends javax.swing.JDialog {
         jRadioButton1.setActionCommand("newModel");
 
         selectModelButtonGroup.add(jRadioButton2);
-        jRadioButton2.setText("Load an external model");
-        jRadioButton2.setActionCommand("loadModel");
+        jRadioButton2.setText("Load model with inference graph");
+        jRadioButton2.setActionCommand("loadModelWithInference");
+
+        selectModelButtonGroup.add(jRadioButton3);
+        jRadioButton3.setText("Load an external model");
+        jRadioButton3.setActionCommand("loadModelExternal");
 
         javax.swing.GroupLayout selectionPanelLayout = new javax.swing.GroupLayout(selectionPanel);
         selectionPanel.setLayout(selectionPanelLayout);
@@ -169,6 +198,7 @@ public class CreateNewModel extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, selectionPanelLayout.createSequentialGroup()
                 .addContainerGap(158, Short.MAX_VALUE)
                 .addGroup(selectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jRadioButton3)
                     .addComponent(jRadioButton1)
                     .addComponent(jRadioButton2)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -183,7 +213,9 @@ public class CreateNewModel extends javax.swing.JDialog {
                 .addComponent(jRadioButton1)
                 .addGap(18, 18, 18)
                 .addComponent(jRadioButton2)
-                .addContainerGap(218, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(jRadioButton3)
+                .addContainerGap(185, Short.MAX_VALUE))
         );
 
         slider.add(selectionPanel, "card2");
@@ -232,7 +264,7 @@ public class CreateNewModel extends javax.swing.JDialog {
                     .addComponent(jLabel4)
                     .addComponent(externalModelPathText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(fileChooserButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 124, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
                 .addComponent(messageBoxExternalModel, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(57, 57, 57))
         );
@@ -329,7 +361,7 @@ public class CreateNewModel extends javax.swing.JDialog {
                 .addGroup(newModelNameandLocationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(modelPathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 124, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
                 .addComponent(messageBoxNameAndLocation, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(67, 67, 67))
         );
@@ -341,52 +373,68 @@ public class CreateNewModel extends javax.swing.JDialog {
         jLabel5.setFont(new java.awt.Font("Fira Code", 0, 12)); // NOI18N
         jLabel5.setText("Select the paths to below files...");
 
-        jLabel6.setText("Path to frozen inference graph");
+        jLabel6.setText("Path to pipeline config file");
 
-        frozenInferenceGraphFC.setText("...");
-        frozenInferenceGraphFC.addActionListener(new java.awt.event.ActionListener() {
+        pipelineConfigFilePathFC.setText("...");
+        pipelineConfigFilePathFC.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                frozenInferenceGraphFCActionPerformed(evt);
+                pipelineConfigFilePathFCActionPerformed(evt);
             }
         });
 
-        jLabel7.setText("Path to testing images directory");
+        jLabel7.setText("Path to annotated images directory");
 
-        testImagesFC.setText("...");
-        testImagesFC.addActionListener(new java.awt.event.ActionListener() {
+        annotatedImagesDirPathFC.setText("...");
+        annotatedImagesDirPathFC.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testImagesFCActionPerformed(evt);
+                annotatedImagesDirPathFCActionPerformed(evt);
             }
         });
 
-        jLabel8.setText("Path to output images directory");
+        jLabel8.setText("Path to train dataset file");
 
-        outputImagesFC.setText("...");
-        outputImagesFC.addActionListener(new java.awt.event.ActionListener() {
+        trainDatasetPathFC.setText("...");
+        trainDatasetPathFC.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                outputImagesFCActionPerformed(evt);
+                trainDatasetPathFCActionPerformed(evt);
             }
         });
 
-        jLabel9.setText("Path to classes (.pbtxt) file");
+        jLabel9.setText("Path to test dataset file");
 
-        classFileFC.setText("...");
-        classFileFC.addActionListener(new java.awt.event.ActionListener() {
+        testDatasetPathFC.setText("...");
+        testDatasetPathFC.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                classFileFCActionPerformed(evt);
+                testDatasetPathFCActionPerformed(evt);
             }
         });
 
         messageBox.setFont(new java.awt.Font("Fira Code", 0, 12)); // NOI18N
         messageBox.setForeground(new java.awt.Color(204, 0, 0));
 
+        jLabel19.setText("Path to output directory");
+
+        outputDirPathFC.setText("...");
+        outputDirPathFC.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                outputDirPathFCActionPerformed(evt);
+            }
+        });
+
+        jLabel20.setText("Number of classes");
+
         javax.swing.GroupLayout newModelPanelLayout = new javax.swing.GroupLayout(newModelPanel);
         newModelPanel.setLayout(newModelPanelLayout);
         newModelPanelLayout.setHorizontalGroup(
             newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, newModelPanelLayout.createSequentialGroup()
-                .addContainerGap(40, Short.MAX_VALUE)
+            .addGroup(newModelPanelLayout.createSequentialGroup()
+                .addContainerGap(12, Short.MAX_VALUE)
+                .addComponent(messageBox, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(103, 103, 103))
+            .addGroup(newModelPanelLayout.createSequentialGroup()
+                .addGap(28, 28, 28)
                 .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 367, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(newModelPanelLayout.createSequentialGroup()
                         .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel6)
@@ -396,56 +444,185 @@ public class CreateNewModel extends javax.swing.JDialog {
                         .addGap(18, 18, 18)
                         .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(newModelPanelLayout.createSequentialGroup()
-                                .addComponent(classesFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(trainDatasetPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, 0)
-                                .addComponent(classFileFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(trainDatasetPathFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(newModelPanelLayout.createSequentialGroup()
-                                .addComponent(outputImagesPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(annotatedImagesDirPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, 0)
-                                .addComponent(outputImagesFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(annotatedImagesDirPathFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(newModelPanelLayout.createSequentialGroup()
-                                .addComponent(testingImagesPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(pipelineConfigFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, 0)
-                                .addComponent(testImagesFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(pipelineConfigFilePathFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(newModelPanelLayout.createSequentialGroup()
-                                .addComponent(frozenInferenceGraphPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(testDatasetPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, 0)
-                                .addComponent(frozenInferenceGraphFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 367, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(messageBox, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(39, 39, 39))
+                                .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(outputDirPathFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(testDatasetPathFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                    .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(newModelPanelLayout.createSequentialGroup()
+                            .addComponent(jLabel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGap(92, 92, 92)
+                            .addComponent(numberOfClasses, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(newModelPanelLayout.createSequentialGroup()
+                            .addComponent(jLabel19)
+                            .addGap(92, 92, 92)
+                            .addComponent(outputDirPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         newModelPanelLayout.setVerticalGroup(
             newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(newModelPanelLayout.createSequentialGroup()
-                .addGap(64, 64, 64)
+                .addContainerGap(58, Short.MAX_VALUE)
                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
-                    .addComponent(frozenInferenceGraphPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(frozenInferenceGraphFC))
+                    .addComponent(pipelineConfigFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pipelineConfigFilePathFC))
                 .addGap(18, 18, 18)
                 .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
-                    .addComponent(testingImagesPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(testImagesFC))
+                    .addComponent(annotatedImagesDirPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(annotatedImagesDirPathFC))
                 .addGap(18, 18, 18)
                 .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
-                    .addComponent(outputImagesPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(outputImagesFC))
+                    .addComponent(trainDatasetPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(trainDatasetPathFC))
                 .addGap(18, 18, 18)
                 .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
-                    .addComponent(classesFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(classFileFC))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 93, Short.MAX_VALUE)
+                    .addComponent(testDatasetPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testDatasetPathFC))
+                .addGap(18, 18, 18)
+                .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel19)
+                    .addComponent(outputDirPathFC)
+                    .addComponent(outputDirPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(newModelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel20)
+                    .addComponent(numberOfClasses, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addComponent(messageBox, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(32, 32, 32))
         );
 
         slider.add(newModelPanel, "card3");
+
+        loadModelWithInferencePanel.setName("loadModelWithInference"); // NOI18N
+
+        jLabel14.setFont(new java.awt.Font("Fira Code", 0, 12)); // NOI18N
+        jLabel14.setText("Select the paths to below files...");
+
+        jLabel15.setText("Path to frozen inference graph");
+
+        frozenInferenceGraphFC.setText("...");
+        frozenInferenceGraphFC.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frozenInferenceGraphFCActionPerformed(evt);
+            }
+        });
+
+        jLabel16.setText("Path to testing images directory");
+
+        testImagesFC.setText("...");
+        testImagesFC.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testImagesFCActionPerformed(evt);
+            }
+        });
+
+        jLabel17.setText("Path to output images directory");
+
+        outputImagesFC.setText("...");
+        outputImagesFC.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                outputImagesFCActionPerformed(evt);
+            }
+        });
+
+        jLabel18.setText("Path to classes (.pbtxt) file");
+
+        classFileFC.setText("...");
+        classFileFC.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                classFileFCActionPerformed(evt);
+            }
+        });
+
+        messageBox1.setFont(new java.awt.Font("Fira Code", 0, 12)); // NOI18N
+        messageBox1.setForeground(new java.awt.Color(204, 0, 0));
+
+        javax.swing.GroupLayout loadModelWithInferencePanelLayout = new javax.swing.GroupLayout(loadModelWithInferencePanel);
+        loadModelWithInferencePanel.setLayout(loadModelWithInferencePanelLayout);
+        loadModelWithInferencePanelLayout.setHorizontalGroup(
+            loadModelWithInferencePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, loadModelWithInferencePanelLayout.createSequentialGroup()
+                .addContainerGap(40, Short.MAX_VALUE)
+                .addGroup(loadModelWithInferencePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(loadModelWithInferencePanelLayout.createSequentialGroup()
+                        .addGroup(loadModelWithInferencePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel15)
+                            .addComponent(jLabel16)
+                            .addComponent(jLabel17)
+                            .addComponent(jLabel18))
+                        .addGap(18, 18, 18)
+                        .addGroup(loadModelWithInferencePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(loadModelWithInferencePanelLayout.createSequentialGroup()
+                                .addComponent(classesFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, 0)
+                                .addComponent(classFileFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(loadModelWithInferencePanelLayout.createSequentialGroup()
+                                .addComponent(outputImagesPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, 0)
+                                .addComponent(outputImagesFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(loadModelWithInferencePanelLayout.createSequentialGroup()
+                                .addComponent(testingImagesPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, 0)
+                                .addComponent(testImagesFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(loadModelWithInferencePanelLayout.createSequentialGroup()
+                                .addComponent(frozenInferenceGraphPath, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, 0)
+                                .addComponent(frozenInferenceGraphFC, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 367, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(messageBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(39, 39, 39))
+        );
+        loadModelWithInferencePanelLayout.setVerticalGroup(
+            loadModelWithInferencePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loadModelWithInferencePanelLayout.createSequentialGroup()
+                .addGap(64, 64, 64)
+                .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(loadModelWithInferencePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel15)
+                    .addComponent(frozenInferenceGraphPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(frozenInferenceGraphFC))
+                .addGap(18, 18, 18)
+                .addGroup(loadModelWithInferencePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel16)
+                    .addComponent(testingImagesPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testImagesFC))
+                .addGap(18, 18, 18)
+                .addGroup(loadModelWithInferencePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel17)
+                    .addComponent(outputImagesPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(outputImagesFC))
+                .addGap(18, 18, 18)
+                .addGroup(loadModelWithInferencePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel18)
+                    .addComponent(classesFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(classFileFC))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 96, Short.MAX_VALUE)
+                .addComponent(messageBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(32, 32, 32))
+        );
+
+        slider.add(loadModelWithInferencePanel, "card3");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -472,6 +649,7 @@ public class CreateNewModel extends javax.swing.JDialog {
     private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
         String currentPanel = getCurrentPanel();
         String selectedOption = selectModelButtonGroup.getSelection().getActionCommand();
+
         if (selectedOption.equals("newModel")) {
             if (currentPanel.equals("welcome")) {
                 slider.nextPanel(10, newModelNameandLocation, slider.left);
@@ -481,6 +659,22 @@ public class CreateNewModel extends javax.swing.JDialog {
             } else if (currentPanel.equals("nameAndLocation")) {
                 if (!modelNameField.getText().isEmpty()) {
                     slider.nextPanel(10, newModelPanel, slider.left);
+                    previousButton.setEnabled(true);
+                    nextButton.setEnabled(false);
+                    finishButton.setEnabled(true);
+                } else {
+                    messageBoxNameAndLocation.setText(SystemConstants.REQUIRED);
+                }
+            }
+        } else if (selectedOption.equals("loadModelWithInference")) {
+            if (currentPanel.equals("welcome")) {
+                slider.nextPanel(10, newModelNameandLocation, slider.left);
+                previousButton.setEnabled(true);
+                nextButton.setEnabled(true);
+                finishButton.setEnabled(false);
+            } else if (currentPanel.equals("nameAndLocation")) {
+                if (!modelNameField.getText().isEmpty()) {
+                    slider.nextPanel(10, loadModelWithInferencePanel, slider.left);
                     previousButton.setEnabled(true);
                     nextButton.setEnabled(false);
                     finishButton.setEnabled(true);
@@ -514,24 +708,55 @@ public class CreateNewModel extends javax.swing.JDialog {
             previousButton.setEnabled(true);
             nextButton.setEnabled(true);
             finishButton.setEnabled(false);
+        } else if (currentPanel.equals("loadModelWithInference")) {
+            slider.nextPanel(10, newModelNameandLocation, slider.right);
+            previousButton.setEnabled(true);
+            nextButton.setEnabled(true);
+            finishButton.setEnabled(false);
         }
     }//GEN-LAST:event_previousButtonActionPerformed
 
     private void finishButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_finishButtonActionPerformed
         if (selectModelButtonGroup.getSelection().getActionCommand().equals("newModel")) {
-            String figPath = frozenInferenceGraphPath.getText();
-            String tiPath = testingImagesPath.getText();
-            String oiPath = outputImagesPath.getText();
-            String cfPath = classesFilePath.getText();
-            if (figPath.isEmpty() || tiPath.isEmpty() || oiPath.isEmpty() || cfPath.isEmpty()) {
+            String pipelineCFPath = this.pipelineConfigFilePath.getText();
+            String annotatedIDirPath = this.annotatedImagesDirPath.getText();
+            String trainDSPath = this.trainDatasetPath.getText();
+            String testDSPath = this.testDatasetPath.getText();
+            String outputDirecPath = this.outputDirPath.getText();
+            String numClasses = this.numberOfClasses.getText();
+            if (pipelineCFPath.isEmpty() || annotatedIDirPath.isEmpty()
+                    || trainDSPath.isEmpty() || testDSPath.isEmpty()
+                    || outputDirecPath.isEmpty() || numClasses.isEmpty()) {
                 messageBox.setText(SystemConstants.REQUIRED);
             } else {
                 model = new ClassifierModel();
                 this.model.setName(modelNameField.getText());
                 this.model.setPath(modelPathField.getText());
+                this.model.setPipelineConfiguration(pipelineCFPath);
+                this.model.setAnnotatedImagesPath(annotatedIDirPath);
+                this.model.setTrainDatasetPath(trainDSPath);
+                this.model.setTestDatasetPath(testDSPath);
+                this.model.setOiPath(outputDirecPath);
+                this.model.setNumberOfClasses(Integer.parseInt(numClasses));
+
+                this.dispose();
+            }
+        } else if (selectModelButtonGroup.getSelection().getActionCommand().equals("loadModelWithInference")) {
+            String figPath = this.frozenInferenceGraphPath.getText();
+            String oiPath = this.outputImagesPath.getText();
+            String tiPath = this.testingImagesPath.getText();
+            String cfPath = this.classesFilePath.getText();
+
+            if (figPath.isEmpty() || oiPath.isEmpty() || tiPath.isEmpty()
+                    || cfPath.isEmpty()) {
+                messageBox.setText(SystemConstants.REQUIRED);
+            } else {
+                model = new ClassifierModel();
+                this.model.setName(modelNameField.getText());
+                this.model.setPath(modelPathField.getText());
+                this.model.setOiPath(oiPath);
                 this.model.setFigPath(figPath);
                 this.model.setTiPath(tiPath);
-                this.model.setOiPath(oiPath);
                 this.model.setCfPath(cfPath);
 
                 this.dispose();
@@ -544,10 +769,10 @@ public class CreateNewModel extends javax.swing.JDialog {
                 model = new ClassifierModel();
                 try {
 
-                File fXmlFile = new File(externalModelPath);
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-                Document doc = dBuilder.parse(fXmlFile);
+                    File fXmlFile = new File(externalModelPath);
+                    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                    Document doc = dBuilder.parse(fXmlFile);
 
                     doc.getDocumentElement().normalize();
                     NodeList modelPropList = doc.getElementsByTagName("model");
@@ -563,6 +788,11 @@ public class CreateNewModel extends javax.swing.JDialog {
                         String oiPath = mElement.getElementsByTagName("oiPath").item(0).getTextContent();
                         String tiPath = mElement.getElementsByTagName("tiPath").item(0).getTextContent();
                         String cfPath = mElement.getElementsByTagName("cfPath").item(0).getTextContent();
+                        String pipePath = mElement.getElementsByTagName("pipelineConfigurationPath").item(0).getTextContent();
+                        String annotatedPath = mElement.getElementsByTagName("annotatedImagesPath").item(0).getTextContent();
+                        String trainDSPath = mElement.getElementsByTagName("trainDatasetPath").item(0).getTextContent();
+                        String testDSPath = mElement.getElementsByTagName("testDatasetPath").item(0).getTextContent();
+                        String numClasses = mElement.getElementsByTagName("numberOfClasses").item(0).getTextContent();
 
                         model.setName(name);
                         model.setPath(path);
@@ -570,15 +800,20 @@ public class CreateNewModel extends javax.swing.JDialog {
                         model.setOiPath(oiPath);
                         model.setTiPath(tiPath);
                         model.setCfPath(cfPath);
+                        model.setPipelineConfiguration(pipePath);
+                        model.setAnnotatedImagesPath(annotatedPath);
+                        model.setTrainDatasetPath(trainDSPath);
+                        model.setTestDatasetPath(testDSPath);
+                        model.setNumberOfClasses(Integer.parseInt(numClasses));
                     }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 this.dispose();
             }
         }
-        
-        this.model.setIcon(new ImageIcon(SystemConstants.PATH_TO_MODEL_ICON));
+
+        model.setIcon(new ImageIcon(SystemConstants.PATH_TO_MODEL_ICON));
     }//GEN-LAST:event_finishButtonActionPerformed
 
     private void fileChooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileChooserButtonActionPerformed
@@ -597,33 +832,33 @@ public class CreateNewModel extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_fileChooserButtonActionPerformed
 
-    private void frozenInferenceGraphFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_frozenInferenceGraphFCActionPerformed
-        setPathToTextBox(
-                "Select the path to frozen inference graph",
+    private void pipelineConfigFilePathFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pipelineConfigFilePathFCActionPerformed
+        setPathToTextBox("Select the path to pipeline configuration file",
                 JFileChooser.FILES_ONLY,
-                frozenInferenceGraphPath);
-    }//GEN-LAST:event_frozenInferenceGraphFCActionPerformed
+                pipelineConfigFilePath,
+                SystemVariables.TRAINING_FOLDER);
+    }//GEN-LAST:event_pipelineConfigFilePathFCActionPerformed
 
-    private void testImagesFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testImagesFCActionPerformed
-        setPathToTextBox(
-                "Select the path to test image directory",
+    private void annotatedImagesDirPathFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_annotatedImagesDirPathFCActionPerformed
+        setPathToTextBox("Select the path to annotated images directory",
                 JFileChooser.DIRECTORIES_ONLY,
-                testingImagesPath);
-    }//GEN-LAST:event_testImagesFCActionPerformed
+                annotatedImagesDirPath,
+                SystemVariables.OBJECT_DETECTION_FOLDER);
+    }//GEN-LAST:event_annotatedImagesDirPathFCActionPerformed
 
-    private void outputImagesFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputImagesFCActionPerformed
-        setPathToTextBox(
-                "Select the path to output image directory",
-                JFileChooser.DIRECTORIES_ONLY,
-                outputImagesPath);
-    }//GEN-LAST:event_outputImagesFCActionPerformed
-
-    private void classFileFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classFileFCActionPerformed
-        setPathToTextBox(
-                "Select the path to class file (.pbtxt file)",
+    private void trainDatasetPathFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trainDatasetPathFCActionPerformed
+        setPathToTextBox("Select the path to train dataset",
                 JFileChooser.FILES_ONLY,
-                classesFilePath);
-    }//GEN-LAST:event_classFileFCActionPerformed
+                trainDatasetPath,
+                SystemVariables.OBJECT_DETECTION_FOLDER + "/data");
+    }//GEN-LAST:event_trainDatasetPathFCActionPerformed
+
+    private void testDatasetPathFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testDatasetPathFCActionPerformed
+        setPathToTextBox("Select the path to test dataset",
+                JFileChooser.FILES_ONLY,
+                testDatasetPath,
+                SystemVariables.OBJECT_DETECTION_FOLDER + "/data");
+    }//GEN-LAST:event_testDatasetPathFCActionPerformed
 
     private void modelNameFieldMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_modelNameFieldMouseClicked
         if (!messageBoxNameAndLocation.getText().equals("")) {
@@ -643,6 +878,41 @@ public class CreateNewModel extends javax.swing.JDialog {
         fileChooser.showOpenDialog(this);
         modelLocationField.setText(fileChooser.getSelectedFile().getAbsolutePath());
     }//GEN-LAST:event_browseButtonActionPerformed
+
+    private void frozenInferenceGraphFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_frozenInferenceGraphFCActionPerformed
+        setPathToTextBox("Select the path to frozen inference graph",
+                JFileChooser.FILES_ONLY,
+                frozenInferenceGraphPath,
+                null);
+    }//GEN-LAST:event_frozenInferenceGraphFCActionPerformed
+
+    private void testImagesFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testImagesFCActionPerformed
+        setPathToTextBox("Select the path to test images directory",
+                JFileChooser.DIRECTORIES_ONLY,
+                testingImagesPath,
+                null);
+    }//GEN-LAST:event_testImagesFCActionPerformed
+
+    private void outputImagesFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputImagesFCActionPerformed
+        setPathToTextBox("Select the path to output images directory",
+                JFileChooser.DIRECTORIES_ONLY,
+                outputImagesPath,
+                null);
+    }//GEN-LAST:event_outputImagesFCActionPerformed
+
+    private void classFileFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classFileFCActionPerformed
+        setPathToTextBox("Select the path to classes file (.pbtxt)",
+                JFileChooser.FILES_ONLY,
+                classesFilePath,
+                null);
+    }//GEN-LAST:event_classFileFCActionPerformed
+
+    private void outputDirPathFCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputDirPathFCActionPerformed
+        setPathToTextBox("Select the path to output directory",
+                JFileChooser.DIRECTORIES_ONLY,
+                outputDirPath,
+                SystemVariables.TRAINING_FOLDER);
+    }//GEN-LAST:event_outputDirPathFCActionPerformed
 
     /**
      * @param args the command line arguments
@@ -687,6 +957,8 @@ public class CreateNewModel extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField annotatedImagesDirPath;
+    private javax.swing.JButton annotatedImagesDirPathFC;
     private javax.swing.JButton browseButton;
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton classFileFC;
@@ -701,7 +973,14 @@ public class CreateNewModel extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -710,8 +989,11 @@ public class CreateNewModel extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
+    private javax.swing.JRadioButton jRadioButton3;
     private javax.swing.JPanel loadModelPanel;
+    private javax.swing.JPanel loadModelWithInferencePanel;
     private javax.swing.JLabel messageBox;
+    private javax.swing.JLabel messageBox1;
     private javax.swing.JLabel messageBoxExternalModel;
     private javax.swing.JLabel messageBoxNameAndLocation;
     private javax.swing.JTextField modelLocationField;
@@ -720,14 +1002,23 @@ public class CreateNewModel extends javax.swing.JDialog {
     private javax.swing.JPanel newModelNameandLocation;
     private javax.swing.JPanel newModelPanel;
     private javax.swing.JButton nextButton;
+    private javax.swing.JTextField numberOfClasses;
+    private javax.swing.JTextField outputDirPath;
+    private javax.swing.JButton outputDirPathFC;
     private javax.swing.JButton outputImagesFC;
     private javax.swing.JTextField outputImagesPath;
+    private javax.swing.JTextField pipelineConfigFilePath;
+    private javax.swing.JButton pipelineConfigFilePathFC;
     private javax.swing.JButton previousButton;
     private javax.swing.ButtonGroup selectModelButtonGroup;
     private javax.swing.JPanel selectionPanel;
     private diu.swe.habib.JPanelSlider.JPanelSlider slider;
+    private javax.swing.JTextField testDatasetPath;
+    private javax.swing.JButton testDatasetPathFC;
     private javax.swing.JButton testImagesFC;
     private javax.swing.JTextField testingImagesPath;
+    private javax.swing.JTextField trainDatasetPath;
+    private javax.swing.JButton trainDatasetPathFC;
     // End of variables declaration//GEN-END:variables
 
     private String getCurrentPanel() {
@@ -740,16 +1031,8 @@ public class CreateNewModel extends javax.swing.JDialog {
         return model;
     }
 
-    private void setPathToTextBox(String title, int selectionType, JTextField textField) {
-        JFileChooser jFileChooser = new JFileChooser("/home/hashan/FrameworkIDE");
-        jFileChooser.setDialogTitle(title);
-        jFileChooser.setFileSelectionMode(selectionType);
-        jFileChooser.showOpenDialog(null);
-        File selectedFile = jFileChooser.getSelectedFile();
-        if (selectedFile != null) {
-            String filePath = selectedFile.getAbsolutePath();
-            textField.setText(filePath);
-        }
+    private void setPathToTextBox(String title, int selectionType, JTextField textField, String startLocation) {
+        FileChooserOptions.chooseFilePath(title, selectionType, textField, startLocation);
         if (!checkUnfilledFields(selectModelButtonGroup.getSelection().getActionCommand())) {
             finishButton.setEnabled(true);
         }
@@ -757,8 +1040,8 @@ public class CreateNewModel extends javax.swing.JDialog {
 
     private boolean checkUnfilledFields(String selectedOption) {
         if (selectedOption.equals("newModel")) {
-            if (frozenInferenceGraphPath.getText().equals("") || testingImagesPath.getText().equals("")
-                    || outputImagesPath.getText().equals("") || classesFilePath.getText().equals("")) {
+            if (pipelineConfigFilePath.getText().equals("") || annotatedImagesDirPath.getText().equals("")
+                    || trainDatasetPath.getText().equals("") || testDatasetPath.getText().equals("")) {
                 return true;
             }
             return false;
@@ -773,5 +1056,11 @@ public class CreateNewModel extends javax.swing.JDialog {
     private void initFields() {
         modelLocationField.setText(SystemVariables.projectRootFolder);
         modelPathField.setText(modelLocationField.getText().concat("/"));
+
+        numberOfClasses.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent evt) {
+                Validator.validateNumberInput(evt, modelPathField, messageBox);
+            }
+        });
     }
 }
